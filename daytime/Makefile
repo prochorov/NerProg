@@ -1,22 +1,33 @@
-.PHONY: all debug release clean
+# Имя компилятора
+CXX = g++
 
-RELEASE_FLAGS = -O2 -Wall -DNDEBUG
-DEBUG_FLAGS   = -g -O0 -Wall
-RELEASE_EXEC  = main
-DEBUG_EXEC    = main-dbg
-SOURCE        = main.cpp
+# Флаги компиляции
+CXXFLAGS = -std=c++11 -Wall
 
-all: debug release
+# Имена целей и их зависимости
+CLIENT_TARGET = client
+SERVER_TARGET = server
 
-debug: $(DEBUG_EXEC)
+# Файлы исходного кода
+CLIENT_SOURCE = client.cpp
+SERVER_SOURCE = server.cpp
 
-$(DEBUG_EXEC): $(SOURCE)
-	g++ $(DEBUG_FLAGS) $(SOURCE) -o $(DEBUG_EXEC)
-	
-release: $(RELEASE_EXEC)
+# Сборка клиента
+$(CLIENT_TARGET): $(CLIENT_SOURCE)
+	$(CXX) $(CXXFLAGS) -o $(CLIENT_TARGET) $(CLIENT_SOURCE)
 
-$(RELEASE_EXEC): $(SOURCE)
-	g++ $(RELEASE_FLAGS) $(SOURCE) -o $(RELEASE_EXEC)
-	
+# Сборка сервера
+$(SERVER_TARGET): $(SERVER_SOURCE)
+	$(CXX) $(CXXFLAGS) -o $(SERVER_TARGET) $(SERVER_SOURCE)
+
+# Правило "clean" для удаления созданных файлов
 clean:
-	rm -rf $(RELEASE_EXEC) $(DEBUG_EXEC)
+	rm -f $(CLIENT_TARGET) $(SERVER_TARGET)
+
+# Правило "all" для сборки клиента и сервера
+all: $(CLIENT_TARGET) $(SERVER_TARGET)
+
+# Правило по умолчанию
+.DEFAULT_GOAL := all
+
+.PHONY: clean

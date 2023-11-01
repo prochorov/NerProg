@@ -2,8 +2,8 @@
 
 RELEASE_FLAGS = -O2 -Wall -DNDEBUG
 DEBUG_FLAGS   = -g -O0 -Wall
-RELEASE_EXEC  = main
-DEBUG_EXEC    = main-dbg
+RELEASE_EXEC  = Echo
+DEBUG_EXEC    = Echo-dbg
 SOURCE        = main.cpp
 
 all: debug release
@@ -11,12 +11,12 @@ all: debug release
 debug: $(DEBUG_EXEC)
 
 $(DEBUG_EXEC): $(SOURCE)
-	g++ $(DEBUG_FLAGS) $(SOURCE) -o $(DEBUG_EXEC)
-	
+	g++ $(DEBUG_FLAGS) $(SOURCE) -o $(DEBUG_EXEC) 
+
 release: $(RELEASE_EXEC)
 
 $(RELEASE_EXEC): $(SOURCE)
 	g++ $(RELEASE_FLAGS) $(SOURCE) -o $(RELEASE_EXEC)
-	
+
 clean:
-	rm -rf $(RELEASE_EXEC) $(DEBUG_EXEC)
+	rm -f $(RELEASE_EXEC) $(DEBUG_EXEC)

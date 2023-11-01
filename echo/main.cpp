@@ -1,57 +1,57 @@
+#include <netinet/in.h>
 #include <iostream>
-#include <string>
-#include <cstring>
-#include <sys/socket.h>
 #include <arpa/inet.h>
+#include <cstdlib>
 #include <unistd.h>
+using namespace std;
 
-const int BUFFER_SIZE = 1024;
+int main()
+{
+    struct sockaddr_in {
+        short sin_family;
+        unsigned short sin_port;
+        struct in_addr sin_addr;
+        char sin_zero[8];
+    };
+    struct in_addr {
+        unsigned long s_addr;
+    };
 
-int main() {
-    int clientSocket;
-    struct sockaddr_in serverAddress;
-    char buffer[BUFFER_SIZE];
+    int s = socket(AF_INET, SOCK_STREAM, 0);
 
-    // Создание сокета
-    if ((clientSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        std::cerr << "Ошибка создания сокета" << std::endl;
+
+    sockaddr_in * self_addr = new (sockaddr_in);
+    self_addr->sin_family = AF_INET;
+    self_addr->sin_port = htons(7777);
+    self_addr->sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    int b = bind(s,(const sockaddr*) self_addr,sizeof(sockaddr_in));
+    if(b == -1) {
+        cout << "Binding error\n";
         return 1;
     }
-
-    // Настройка адреса сервера
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(7); // Порт сервера
-    serverAddress.sin_addr.s_addr = inet_addr("172.16.40.1"); // IP-адрес сервера
-
-    // Установка соединения с сервером
-    if (connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {
-        std::cerr << "Ошибка соединения с сервером" << std::endl;
+    int rl = listen(s, 5);
+    if(rl == -1) {
+        cout << "Listening error\n";
         return 1;
     }
-
-    // Ввод сообщения для отправки серверу
-    std::string message;
-    std::cout << "Введите сообщение для отправки серверу: ";
-    std::getline(std::cin, message);
-
-    // Отправка сообщения серверу
-    if (send(clientSocket, message.c_str(), message.length(), 0) == -1) {
-        std::cerr << "Ошибка отправки сообщения" << std::endl;
-        return 1;
+    while(true) {
+        sockaddr_in * client_addr = new sockaddr_in;
+        socklen_t len = sizeof (sockaddr_in);
+        int work_sock = accept(s, (sockaddr*)(client_addr), &len);
+        if(work_sock == -1) {
+            cout << "Error #2\n";
+        } else {
+            cout << "Successfull client connection!\n";
+            char *msg = new char [2560000];
+            recv(work_sock, msg, 2560000, 0);
+            cout << "Message from client: " << msg;
+            send(work_sock, msg, 10000, 0);
+            cout << "Message was returned to client!\n";
+            delete [] msg;
+            close(work_sock);
+        }
     }
-
-    // Получение ответа от сервера
-    memset(buffer, 0, sizeof(buffer)); // Очистка буфера
-    if (recv(clientSocket, buffer, BUFFER_SIZE, 0) == -1) {
-        std::cerr << "Ошибка получения ответа" << std::endl;
-        return 1;
-    }
-
-    std::cout << "Полученный ответ: " << buffer << std::endl;
-
-    // Закрытие соединения
-    close(clientSocket);
-
+    close(s);
     return 0;
 }
-
